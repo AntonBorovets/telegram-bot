@@ -1,0 +1,353 @@
+[
+    {
+        "id": "457207746d9085b9",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "519c9962b401aa3d",
+        "type": "chatbot-telegram-node",
+        "botname": "NovaIT_Bot",
+        "polling": 1000,
+        "store": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "34a32d60594edfc2",
+        "type": "chatbot-telegram-receive",
+        "z": "457207746d9085b9",
+        "bot": "519c9962b401aa3d",
+        "botProduction": "",
+        "x": 310,
+        "y": 380,
+        "wires": [
+            [
+                "d103b3a1d99613dc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "4bac2a97728da617",
+        "type": "chatbot-telegram-send",
+        "z": "457207746d9085b9",
+        "bot": "519c9962b401aa3d",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 1170,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "df039dce285086b0",
+        "type": "function",
+        "z": "457207746d9085b9",
+        "name": "",
+        "func": "const raw = (msg.payload && msg.payload.content ? msg.payload.content : msg.payload || '').toString().trim();\nconst chatId = msg.chatId || (msg.payload && msg.payload.chatId);\n\n// Ігноруємо ТІЛЬКИ команди типу /start або системні кнопки меню\nif (!raw || raw.startsWith('/') || raw === 'nbu' || raw === 'currency' || raw === 'operator') {\n    return null;\n}\n\n// Занадто довгий ввід\nif (raw.length > 50) {\n    msg.payload = '⚠️ Занадто довгий вираз (макс 50 символів).';\n    return msg;\n}\n\n// Перевірка на формат \"число оператор число\"\nconst match = raw.match(/^(-?\\d+(?:[.,]\\d+)?)\\s*([+\\-*xх×÷/])\\s*(-?\\d+(?:[.,]\\d+)?)$/i);\n\nif (!match) {\n    msg.payload = `⚠️ Не розпізнав вираз \"${raw}\". Формат: число оператор число, напр. 12 + 7`;\n    return msg;\n}\n\nconst a = parseFloat(match[1].replace(',', '.'));\nconst op = match[2];\nconst b = parseFloat(match[3].replace(',', '.'));\n\nlet result;\nswitch (op) {\n    case '+': result = a + b; break;\n    case '-': result = a - b; break;\n    case '*': case 'x': case 'х': case '×': result = a * b; break;\n    case '/': case '÷':\n        if (b === 0) {\n            msg.payload = '⚠️ На нуль ділити не можна 🙂 Спробуй інший вираз.';\n            return msg;\n        }\n        result = a / b;\n        break;\n}\n\nmsg.payload = `✅ Результат: ${a} ${op} ${b} = ${result}`;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 120,
+        "wires": [
+            [
+                "c2973bc7034385ce"
+            ]
+        ]
+    },
+    {
+        "id": "3c526ca11927769f",
+        "type": "chatbot-inline-buttons",
+        "z": "457207746d9085b9",
+        "name": "Main Menu",
+        "buttons": [
+            {
+                "type": "postback",
+                "label": "🧮 Калькулятор",
+                "value": "calc",
+                "answer": "",
+                "alert": false,
+                "style": ""
+            },
+            {
+                "type": "postback",
+                "label": "💵 Курс валют",
+                "value": "nbu",
+                "answer": "",
+                "alert": false,
+                "style": ""
+            },
+            {
+                "type": "postback",
+                "label": "ℹ️ Про бота",
+                "value": "about",
+                "answer": "",
+                "alert": false,
+                "style": ""
+            },
+            {
+                "type": "postback",
+                "label": "🆘 Оператор",
+                "value": "operator",
+                "answer": "",
+                "alert": false,
+                "style": ""
+            }
+        ],
+        "message": "Обери, будь ласка, пункт меню 👇",
+        "trackMessage": true,
+        "outputs": 6,
+        "x": 670,
+        "y": 360,
+        "wires": [
+            [
+                "4bac2a97728da617"
+            ],
+            [
+                "fd9cf646f40fa0f4"
+            ],
+            [
+                "97ba35b5558201fb"
+            ],
+            [
+                "43c58118029451ac"
+            ],
+            [
+                "0ec6d2f01ea0c981"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "43c58118029451ac",
+        "type": "chatbot-message",
+        "z": "457207746d9085b9",
+        "name": "",
+        "message": [
+            {
+                "message": "Цей бот створений для виконання тестового завдання. Він вміє рахувати вирази та показувати курс НБУ"
+            }
+        ],
+        "language": "none",
+        "x": 870,
+        "y": 380,
+        "wires": [
+            [
+                "4bac2a97728da617"
+            ]
+        ]
+    },
+    {
+        "id": "c2973bc7034385ce",
+        "type": "chatbot-inline-buttons",
+        "z": "457207746d9085b9",
+        "name": "Calc Result",
+        "buttons": [
+            {
+                "type": "postback",
+                "label": "⬅️ Назад в меню",
+                "value": "back",
+                "answer": "",
+                "alert": false,
+                "style": ""
+            }
+        ],
+        "message": "{{payload}}",
+        "trackMessage": true,
+        "outputs": 3,
+        "x": 770,
+        "y": 120,
+        "wires": [
+            [
+                "4bac2a97728da617"
+            ],
+            [
+                "3c526ca11927769f"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "d103b3a1d99613dc",
+        "type": "switch",
+        "z": "457207746d9085b9",
+        "name": "",
+        "property": "payload.content",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "regex",
+                "v": "^\\/start",
+                "vt": "str",
+                "case": false
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "3c526ca11927769f"
+            ],
+            [
+                "df039dce285086b0"
+            ]
+        ]
+    },
+    {
+        "id": "164227a147afa3ee",
+        "type": "function",
+        "z": "457207746d9085b9",
+        "name": "Unified Logger",
+        "func": "// Function node: \"Unified Logger\" — без змін у Calc Result!\nconst text = (msg.payload || '').toString();\nconst chatId = msg.originalMessage?.chat?.id || msg.chatId || 'unknown';\nconst time = new Date().toISOString();\n\nlet step = 'unknown';\nlet status = 'info';\n\nif (text.startsWith('✅ Результат')) {\n    step = 'calc:result';\n    status = 'success';\n} else if (text.includes('нуль')) {\n    step = 'calc:validation_error';\n    status = 'error';\n} else if (text.includes('Не розпізнав') || text.includes('довгий')) {\n    step = 'calc:validation_error';\n    status = 'error';\n}\n\nnode.warn(`[${time}] chat=${chatId} step=${step} status=${status} :: ${text}`);\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
+        "y": 500,
+        "wires": [
+            [
+                "6f3dda43f01a7548"
+            ]
+        ]
+    },
+    {
+        "id": "0ec6d2f01ea0c981",
+        "type": "function",
+        "z": "457207746d9085b9",
+        "name": "Generate Support Ticket",
+        "func": "// Function node: \"Generate Support Ticket\"\nconst chatId = msg.chatId || (msg.payload && msg.payload.chatId) || (msg.originalMessage && msg.originalMessage.chat.id);\n\nconst session = flow.get('session_' + chatId) || {};\n\nconst ticket = {\n    ticket_id: `TCK-${Date.now()}`,\n    timestamp: new Date().toISOString(),\n    chat_id: chatId,\n    reason: (session.errorCount && session.errorCount >= 3) ? '3_consecutive_errors' : 'manual_request',\n    last_step: session.lastStep || 'menu',\n    error_count: session.errorCount || 0,\n    status: 'pending_operator'\n};\n\nsession.errorCount = 0;\nflow.set('session_' + chatId, session);\n\n// Вихід 1: Об'єкт у стандарті RedBot для Telegram Sender\nconst replyMsg = {\n    ...msg,\n    chatId: chatId,\n    payload: {\n        type: 'message',\n        content: `🆘 Бачу, що виникли труднощі. Переводжу тебе на оператора кол-центру.\\n\\nТікет *${ticket.ticket_id}* створено, з тобою зв'яжуться найближчим часом.`,\n        chatId: chatId\n    }\n};\n\n// Вихід 2: Запис для Unified Logger\nconst logMsg = {\n    payload: {\n        timestamp: ticket.timestamp,\n        chatId: chatId,\n        step: 'handoff:triggered',\n        status: 'ok',\n        summary: JSON.stringify(ticket)\n    }\n};\n\nreturn [replyMsg, logMsg];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 890,
+        "y": 440,
+        "wires": [
+            [
+                "4bac2a97728da617"
+            ],
+            [
+                "164227a147afa3ee"
+            ]
+        ]
+    },
+    {
+        "id": "97ba35b5558201fb",
+        "type": "http request",
+        "z": "457207746d9085b9",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 870,
+        "y": 340,
+        "wires": [
+            [
+                "a0db850a6d1942ed"
+            ]
+        ]
+    },
+    {
+        "id": "a0db850a6d1942ed",
+        "type": "function",
+        "z": "457207746d9085b9",
+        "name": "Format Currency",
+        "func": "// Function node: \"Format Currency\" — 2 outputs\nconst chatId = msg.chatId || (msg.payload && msg.payload.chatId) || (msg.originalMessage && msg.originalMessage.chat && msg.originalMessage.chat.id);\n\nfunction makeLog(step, status, summary) {\n    return {\n        payload: {\n            timestamp: new Date().toISOString(),\n            chatId: chatId,\n            step: step,\n            status: status,\n            summary: summary\n        }\n    };\n}\n\nif (msg.statusCode !== 200 || !Array.isArray(msg.payload)) {\n    const replyMsg = {\n        ...msg,\n        chatId: chatId,\n        payload: {\n            type: 'message',\n            content: '⚠️ Не вдалося отримати курс, спробуйте пізніше.',\n            chatId: chatId\n        }\n    };\n    return [replyMsg, makeLog('nbu:error', 'error', `HTTP status ${msg.statusCode}`)];\n}\n\nconst usd = msg.payload.find(item => item.cc === 'USD');\nconst eur = msg.payload.find(item => item.cc === 'EUR');\n\nif (!usd || !eur) {\n    const replyMsg = {\n        ...msg,\n        chatId: chatId,\n        payload: {\n            type: 'message',\n            content: '⚠️ Не вдалося знайти потрібну валюту у відповіді НБУ.',\n            chatId: chatId\n        }\n    };\n    return [replyMsg, makeLog('nbu:error', 'error', 'USD or EUR not found in NBU response')];\n}\n\nconst date = usd.exchangedate;\n\n// Чистий гарний текст з емодзі без проблемних тегів\nconst text = `💵 Курс НБУ на ${date}:\\n\\n🇺🇸 USD: ${usd.rate.toFixed(2)} грн\\n🇪🇺 EUR: ${eur.rate.toFixed(2)} грн`;\n\n// Вихід 1: Напряму для Telegram Sender (як у тікеті!)\nconst replyMsg = {\n    ...msg,\n    chatId: chatId,\n    payload: {\n        type: 'message',\n        content: text,\n        chatId: chatId\n    }\n};\n\n// Вихід 2: Лог\nconst logMsg = makeLog('nbu:request_sent', 'ok', `Fetched rates for ${date}`);\n\nreturn [replyMsg, logMsg];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1170,
+        "y": 340,
+        "wires": [
+            [
+                "4bac2a97728da617"
+            ],
+            [
+                "164227a147afa3ee"
+            ]
+        ]
+    },
+    {
+        "id": "fd9cf646f40fa0f4",
+        "type": "function",
+        "z": "457207746d9085b9",
+        "name": "function 1",
+        "func": "const chatId = msg.chatId || (msg.payload && msg.payload.chatId) || (msg.originalMessage && msg.originalMessage.chat && msg.originalMessage.chat.id);\n\nflow.set('awaiting_' + chatId, 'calc');\n\nreturn {\n    ...msg,\n    chatId: chatId,\n    payload: {\n        type: 'message',\n        content: '🧮 Введіть математичний вираз для розрахунку (наприклад: 12 + 7 або 25 * 4):',\n        chatId: chatId\n    }\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 300,
+        "wires": [
+            [
+                "4bac2a97728da617"
+            ]
+        ]
+    },
+    {
+        "id": "6f3dda43f01a7548",
+        "type": "debug",
+        "z": "457207746d9085b9",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1200,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "d9241d49c2ae3ef0",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-chatbot": "2.0.1"
+        }
+    }
+]
